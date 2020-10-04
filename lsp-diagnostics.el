@@ -200,6 +200,7 @@ See https://github.com/emacs-lsp/lsp-mode."
                                 (lsp-cpp-flycheck-clang-tidy-error-explainer e))
                                (t (flycheck-error-message e))))))
   (flycheck-mode 1)
+  (flycheck-stop)
   (setq-local flycheck-checker 'lsp)
   (lsp-flycheck-add-mode major-mode)
   (add-to-list 'flycheck-checkers 'lsp)
