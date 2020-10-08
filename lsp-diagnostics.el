@@ -184,9 +184,19 @@ from the language server."
                              (and (get-buffer-window buffer)
                                   (not (-contains? (buffer-local-value 'lsp-on-idle-hook buffer)
                                                    'lsp-diagnostics--flycheck-buffer)))))
-                   (lsp-with-current-buffer buffer
-                     (add-hook 'lsp-on-idle-hook #'lsp-diagnostics--flycheck-buffer nil t)
-                     (lsp--idle-reschedule (current-buffer)))))))))
+                   (progn
+                     (message "(lsp-buffer-live-p buffer) returns %s" (lsp-buffer-live-p buffer))
+                     (message "(bufferp buffer) returns %s" (bufferp buffer))
+                     (message "(get-buffer-window buffer) returns %s" (get-buffer-window buffer))
+                     (message "(buffer-local-value 'lsp-on-idle-hook buffer) returns %s" (buffer-local-value 'lsp-on-idle-hook buffer))
+                     (message "(-contains? ... ) returns %s" (-contains? (buffer-local-value 'lsp-on-idle-hook buffer)
+                                                   'lsp-diagnostics--flycheck-buffer))
+                     (message "lsp-diagnostics--flycheck-report calling lsp--idle-reschedule")
+                     (lsp-with-current-buffer buffer
+                       (add-hook 'lsp-on-idle-hook #'lsp-diagnostics--flycheck-buffer nil t)
+                       (lsp--idle-reschedule (current-buffer)))
+                   )
+                   ))))))
 
 
 (defun lsp-diagnostics-flycheck-enable (&rest _)
@@ -208,8 +218,13 @@ See https://github.com/emacs-lsp/lsp-mode."
   (setq-local flycheck-checker 'lsp)
   (lsp-flycheck-add-mode major-mode)
   (add-to-list 'flycheck-checkers 'lsp)
-  (add-hook 'lsp-diagnostics-updated-hook #'lsp-diagnostics--flycheck-report nil t)
-  (add-hook 'lsp-managed-mode-hook #'lsp-diagnostics--flycheck-report nil t))
+  (message "lsp-diagnostics-flycheck-enable")
+  (add-hook 'lsp-diagnostics-updated-hook #'(lambda ()
+                                              (message "lsp-diagnostics-updated-hook calling lsp-diagnostics--flycheck-report")
+                                              (lsp-diagnostics--flycheck-report)) nil t)
+  (add-hook 'lsp-managed-mode-hook #'(lambda ()
+                                       (message "lsp-managed-mode-hook calling lsp-diagnostics--flycheck-report")
+                                       (lsp-diagnostics--flycheck-report)) nil t))
 
 
 ;; Flymake integration

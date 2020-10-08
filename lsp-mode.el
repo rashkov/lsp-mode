@@ -4256,6 +4256,7 @@ Added to `after-change-functions'."
   :group 'lsp-mode)
 
 (defun lsp--idle-reschedule (buffer)
+  (message "lsp--idle-reschedule executing")
   (when lsp--on-idle-timer
     (cancel-timer lsp--on-idle-timer))
 
@@ -4267,6 +4268,7 @@ Added to `after-change-functions'."
 
 (defun lsp--post-command ()
   (lsp--cleanup-highlights-if-needed)
+  (message "lsp--post-command calling lsp--idle-reschedule")
   (lsp--idle-reschedule (current-buffer)))
 
 (defun lsp--on-idle (buffer)
@@ -4292,6 +4294,7 @@ Added to `after-change-functions'."
                               nil
                               #'lsp--on-change-debounce
                               buffer))
+  (message "lsp--on-idle calling lsp--idle-reschedule")
   (lsp--idle-reschedule buffer))
 
 
