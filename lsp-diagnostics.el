@@ -178,25 +178,18 @@ from the language server."
     (->> lsp--cur-workspace
          (lsp--workspace-buffers)
          (mapc (lambda (buffer)
-                 (when (and (lsp-buffer-live-p buffer)
-                            (or
-                             (not (bufferp buffer))
-                             (and (get-buffer-window buffer)
-                                  (not (-contains? (buffer-local-value 'lsp-on-idle-hook buffer)
-                                                   'lsp-diagnostics--flycheck-buffer)))))
-                   (progn
-                     (message "(lsp-buffer-live-p buffer) returns %s" (lsp-buffer-live-p buffer))
-                     (message "(bufferp buffer) returns %s" (bufferp buffer))
-                     (message "(get-buffer-window buffer) returns %s" (get-buffer-window buffer))
-                     (message "(buffer-local-value 'lsp-on-idle-hook buffer) returns %s" (buffer-local-value 'lsp-on-idle-hook buffer))
-                     (message "(-contains? ... ) returns %s" (-contains? (buffer-local-value 'lsp-on-idle-hook buffer)
-                                                   'lsp-diagnostics--flycheck-buffer))
-                     (message "lsp-diagnostics--flycheck-report calling lsp--idle-reschedule")
-                     (lsp-with-current-buffer buffer
-                       (add-hook 'lsp-on-idle-hook #'lsp-diagnostics--flycheck-buffer nil t)
-                       (lsp--idle-reschedule (current-buffer)))
-                   )
-                   ))))))
+                 (defun should-reschedule-p ()
+                   (and (lsp-buffer-live-p buffer)
+                     (or
+                       (not (bufferp buffer))
+                         (and (get-buffer-window buffer)
+                           (not (-contains? (buffer-local-value 'lsp-on-idle-hook buffer)
+                                                'lsp-diagnostics--flycheck-buffer))))))
+                 (if (should-reschedule-p)
+                   (lsp-with-current-buffer buffer
+                     (add-hook 'lsp-on-idle-hook #'lsp-diagnostics--flycheck-buffer nil t)
+                     (lsp--idle-reschedule (current-buffer)))
+                   (message "SKIPPING RESCHEDULE")))))))
 
 
 (defun lsp-diagnostics-flycheck-enable (&rest _)
